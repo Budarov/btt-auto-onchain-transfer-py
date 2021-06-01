@@ -47,22 +47,19 @@ def get_tronscan_balance():
 #Переводим из In App в On Chain
 #Возвращает id перевода    
 def tranfer(port, token, transfer_sum):
-    #const result = await fetch(`http://127.0.0.1:${port}/api/exchange/withdrawal?t=${token}&amount=${withdrawSum}`, {method: 'POST'}).then(text => text.text());
-    #log.info('RESULT:', result);
     transfer_post = requests.post('http://127.0.0.1:' + str(port) + '/api/exchange/withdrawal?t=' + token + '&amount=' + str(transfer_sum))
     return transfer_post.text
 
 token = get_token(speed_btt_port)
 balance = get_balance(speed_btt_port, token)
 tronscan_balance = get_tronscan_balance()
-#tranfer(speed_btt_port, token, min_transfer_sum)
 
 if (token != "") and (tronscan_balance != 0):
     if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
         print(current_time + ' Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000) + ' Выполняется перевод.')
-        #tr = tranfer(speed_btt_port, token, min_transfer_sum)
-        #print('id транзакции: ' + tr)
+        tr = tranfer(speed_btt_port, token, min_transfer_sum)
+        print('id транзакции: ' + tr)
     else:
         print(current_time + ' Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000) + ' Недостаточно средств In App или на шлюзе.')
-#else:
+
     
