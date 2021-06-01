@@ -54,12 +54,13 @@ token = get_token(speed_btt_port)
 balance = get_balance(speed_btt_port, token)
 tronscan_balance = get_tronscan_balance()
 
-if (token != "") and (tronscan_balance != 0):
+if (token != "") and (tronscan_balance > 0):
     if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
         print(current_time + ' Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000) + ' Выполняется перевод.')
         tr = tranfer(speed_btt_port, token, min_transfer_sum)
         print('id транзакции: ' + tr)
     else:
         print(current_time + ' Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000) + ' Недостаточно средств In App или на шлюзе.')
-
+else:
+    print(current_time + ' Не все необходимые данные удалось получить.')
     
