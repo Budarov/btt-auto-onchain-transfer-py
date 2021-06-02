@@ -17,6 +17,7 @@ min_transfer_sum = 1000000000
 current_time = datetime.now()
 current_time = current_time.strftime("%d-%m-%Y, %H:%M:%S")
 
+#Пишем сообщения в log файл и выводим их в консоль
 def to_log(massage):
     #Получаем текующие дату и время
     massage = ' ' + massage
@@ -72,8 +73,8 @@ tronscan_balance = get_tronscan_balance()
 if (token != "") and (tronscan_balance > 0):
     if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
         to_log(current_time + ' Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000) + ' Выполняется перевод.')
-        #tr = tranfer(speed_btt_port, token, min_transfer_sum)
-        #to_log('id транзакции: ' + tr)
+        tr = tranfer(speed_btt_port, token, min_transfer_sum)
+        to_log('id транзакции: ' + tr)
     else:
         to_log(current_time + ' Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt. Недостаточно средств In App или на шлюзе.')
 else:
