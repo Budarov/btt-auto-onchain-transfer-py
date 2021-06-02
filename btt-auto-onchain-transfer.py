@@ -10,7 +10,7 @@ speed_btt_port = 54426
 # Т.е. 1000 Btt = 1000.000000 Btt. В переменную пишем без точки. 
 min_tronscan_balance = 10000000000
 # Сколько переводим за раз.
-# Доджно быть больше 1000 Btt, т.е. минимум 1000000000
+# Должно быть больше 1000 Btt, т.е. минимум 1000000000
 min_transfer_sum = 1000000000
 # Время задержки между попытками в секундах
 time_to_try = 5
@@ -48,12 +48,14 @@ def get_token(port):
         token_res = requests.get('http://127.0.0.1:' + str(port) + '/api/token')
         token = token_res.text
     except requests.ConnectionError:
-        to_log('Не удалось получить токен BTT Speed по адресу: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Указан неверный порт или не запущен BTT Speed.')
-        return ""
+         to_log('Не удалось получить токен BTT Speed по адресу: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Указан неверный порт или не запущен BTT Speed.')
+         return ''
     return token
 
 # Получаем баланс In App
 def get_balance(port, token):
+    if token == '':
+        return 0
     balance_res = requests.get('http://127.0.0.1:' + str(port) + '/api/status?t=' + token)
     balance = json.loads(balance_res.text)
     return balance['balance']
@@ -65,7 +67,7 @@ def get_tronscan_balance():
         balance = json.loads(balance_res.text)
         sa = list(filter(lambda tokenBalances: tokenBalances['tokenId'] == '1002000', balance["tokenBalances"]))
     except requests.ConnectionError:
-        to_log('Не удалось узнать балан шлюза по адресу https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a сайт недоступен.')
+        to_log('Не удалось узнать баланc шлюза по адресу https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a сайт недоступен.')
         return 0
     return int(sa[0]['balance'])
     
