@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 import os.path, sys
-
+import time
 
 # Указываем ваш порт speed.btt.network
 speed_btt_port = 54426
@@ -12,6 +12,8 @@ min_tronscan_balance = 10000000000
 # Сколько переводим за раз.
 # Доджно быть больше 1000 Btt, т.е. минимум 1000000000
 min_transfer_sum = 1000000000
+# Время задержки между попытками в секундах
+time_to_try = 5
 # Количество строк в log файле
 log_len = 1000
 
@@ -73,18 +75,34 @@ def tranfer(port, token, transfer_sum):
     transfer_post = requests.post('http://127.0.0.1:' + str(port) + '/api/exchange/withdrawal?t=' + token + '&amount=' + str(transfer_sum))
     return transfer_post.text
 
+# Проверка параметра одноразового запуска -onerun
+onerun = False
+if len(sys.argv) > 2:
+	sys.exit("Script has only one argument: -onerun, exit.")
+elif len(sys.argv) == 2:
+	if sys.argv[1] == "-onerun":
+		to_log("------ One-run mode on. ------")
+		onerun = True
+	else:
+		sys.exit("Script has only one argument: -onerun, exit.")
 
-token = get_token(speed_btt_port)
-balance = get_balance(speed_btt_port, token)
-tronscan_balance = get_tronscan_balance()
+def try_tranfer(onerun):
+    token = get_token(speed_btt_port)
+    balance = get_balance(speed_btt_port, token)
+    tronscan_balance = get_tronscan_balance()
 
-if (token != "") and (tronscan_balance > 0):
-    if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
-        to_log('Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000) + ' Выполняется перевод.')
-        tr = tranfer(speed_btt_port, token, min_transfer_sum)
-        to_log('id транзакции: ' + tr)
+    if (token != "") and (tronscan_balance > 0):
+        if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
+            to_log('Выполняется перевод. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000))
+            tr = tranfer(speed_btt_port, token, min_transfer_sum)
+            to_log('id транзакции: ' + tr)
+        else:
+            to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.')
     else:
-        to_log('Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt. Недостаточно средств In App или на шлюзе.')
-else:
-    to_log('Не все необходимые данные удалось получить.')
+        to_log('Не все необходимые данные удалось получить.')
+    if not onerun:
+        time.sleep(time_to_try)
+        try_tranfer(onerun)
+
+try_tranfer(onerun)
     
