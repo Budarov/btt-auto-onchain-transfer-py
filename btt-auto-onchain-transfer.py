@@ -108,7 +108,7 @@ def try_tranfer(onerun):
             tr = tranfer(speed_btt_port, token, min_transfer_sum)
             to_log('id транзакции: ' + tr, True)
         else:
-            if old_tronscan_balance == balance:
+            if (old_tronscan_balance // 1000000) == (balance // 1000000):
                 to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', False)
             else:
                 to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
