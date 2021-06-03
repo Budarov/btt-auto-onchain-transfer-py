@@ -3,13 +3,14 @@ import json
 from datetime import datetime
 import os.path, sys
 import time
+import locale
 
 # Указываем ваш порт speed.btt.network
 speed_btt_port = 54426
 
 # Минимальный баланс на шлюзе, с учетом знаков после запятой.
 # Т.е. 1000 Btt = 1000.000000 Btt. В переменную пишем без точки. 
-min_tronscan_balance = 10000000000
+min_tronscan_balance = 5000000000
 
 # Сколько переводим за раз.
 # Должно быть больше 1000 Btt, т.е. минимум 1000000000
@@ -18,10 +19,17 @@ min_transfer_sum = 1000000000
 # Время задержки между попытками в секундах
 time_to_try = 5
 
+# Время задержки между попытками в секундах при наличии 
+# Btt на шлюзе больше, чем min_tronscan_balance
+turbo_time_to_try = 1
+
 # Количество строк в log файле
 log_len = 1000
 
 old_tronscan_balance = 0
+
+#Узнаём locale системы
+sys_lang = locale.getdefaultlocale()[0]
 
 # Пишем сообщения в log файл и выводим их в консоль
 def to_log(massage, to_file):
@@ -56,8 +64,11 @@ def get_token(port):
         token_res = requests.get('http://127.0.0.1:' + str(port) + '/api/token')
         token = token_res.text
     except requests.ConnectionError:
-         to_log('Не удалось получить токен BTT Speed по адресу: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Указан неверный порт или не запущен BTT Speed.', True)
-         return ''
+        if sys_lang == 'ru_RU':
+            to_log('Не удалось получить токен BTT Speed по адресу: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Указан неверный порт или не запущен BTT Speed.', True)
+        else:
+            to_log('Failed to get BTT Speed token at address: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Wrong port in settings or BTT speed not running.', True)
+        return ''
     return token
 
 # Получаем баланс In App
@@ -75,9 +86,20 @@ def get_tronscan_balance():
         balance = json.loads(balance_res.text)
         sa = list(filter(lambda tokenBalances: tokenBalances['tokenId'] == '1002000', balance["tokenBalances"]))
     except requests.ConnectionError:
-        to_log('Не удалось узнать баланc шлюза по адресу https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a сайт недоступен.', True)
+        if sys_lang == 'ru_RU':
+            to_log('Не удалось узнать баланc шлюза по адресу https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a сайт недоступен.', True)
+        else:
+            to_log('Failed get balance of gateway at address https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a site unavailable.', True)
         return 0
-    return int(sa[0]['balance'])
+    try:
+        res = int(sa[0]['balance'])
+    except IndexError:
+        if sys_lang == 'ru_RU':
+            to_log('Пришел не валидный json от https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a', True)
+        else:
+            to_log('Not valid json from https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a', True)
+        return 0
+    return res
     
 # Переводим из In App в On Chain
 # Возвращает id перевода    
@@ -88,15 +110,24 @@ def tranfer(port, token, transfer_sum):
 # Проверка параметра одноразового запуска -onerun
 onerun = False
 if len(sys.argv) > 2:
-	sys.exit("Script has only one argument: -onerun, exit.")
+    if sys_lang == 'ru_RU':
+        sys.exit("Скрипт имеет только один аргумент: -onerun, выход.")
+    else:
+	    sys.exit("Script has only one argument: -onerun, exit.")
 elif len(sys.argv) == 2:
-	if sys.argv[1] == "-onerun":
-		to_log("------ One-run mode on. ------", False)
-		onerun = True
-	else:
-		sys.exit("Script has only one argument: -onerun, exit.")
+    if sys.argv[1] == "-onerun":
+        if sys_lang == 'ru_RU':
+            to_log("------ Скрипт выполнится один раз. ------", False)
+        else:
+            to_log("------ One-run mode on. ------", False)
+        onerun = True
+    else:
+        if sys_lang == 'ru_RU':
+            sys.exit("Скрипт имеет только один аргумент: -onerun, выход.")
+        else:
+	        sys.exit("Script has only one argument: -onerun, exit.")
 
-def try_tranfer(onerun):
+def try_tranfer(onerun, sleep_time):
     global old_tronscan_balance
     token = get_token(speed_btt_port)
     balance = get_balance(speed_btt_port, token)
@@ -104,21 +135,35 @@ def try_tranfer(onerun):
 
     if (token != "") and (tronscan_balance > 0):
         if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
-            to_log('Выполняется перевод. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Баланс In App: ' + str(balance / 1000000), True)
-            tr = tranfer(speed_btt_port, token, min_transfer_sum)
-            to_log('id транзакции: ' + tr, True)
-        else:
-            if (old_tronscan_balance // 1000000) == (balance // 1000000):
-                to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', False)
+            if sys_lang == 'ru_RU':
+                to_log('Выполняется перевод. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
             else:
-                to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
-            old_tronscan_balance = balance
+                to_log('Transfer in progress. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
+            tr = tranfer(speed_btt_port, token, min_transfer_sum)
+            if sys_lang == 'ru_RU':
+                to_log('id транзакции: ' + tr, True)
+            else:
+                to_log('transaction id: ' + tr, True)
+            sleep_time = turbo_time_to_try
+        else:
+            if (old_tronscan_balance // 1000000) == (tronscan_balance // 1000000):
+                if sys_lang == 'ru_RU':
+                    to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', False)
+                else:
+                    to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', False)
+            else:
+                if sys_lang == 'ru_RU':
+                    to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
+                else:
+                    to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
+            old_tronscan_balance = tronscan_balance
+            sleep_time = time_to_try
     else:
         to_log('Не все необходимые данные удалось получить.', False)
     if not onerun:
-        time.sleep(time_to_try)
-        try_tranfer(onerun)
+        time.sleep(sleep_time)
+        try_tranfer(onerun, sleep_time)
 
 
-try_tranfer(onerun)
+try_tranfer(onerun, time_to_try)
     
