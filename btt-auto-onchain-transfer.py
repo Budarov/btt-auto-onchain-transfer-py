@@ -128,42 +128,41 @@ elif len(sys.argv) == 2:
 	        sys.exit("Script has only one argument: -onerun, exit.")
 
 def try_tranfer(onerun, sleep_time):
-    global old_tronscan_balance
-    token = get_token(speed_btt_port)
-    balance = get_balance(speed_btt_port, token)
-    tronscan_balance = get_tronscan_balance()
+    while True:
+        global old_tronscan_balance
+        token = get_token(speed_btt_port)
+        balance = get_balance(speed_btt_port, token)
+        tronscan_balance = get_tronscan_balance()
 
-    if (token != "") and (tronscan_balance > 0):
-        if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
-            if sys_lang == 'ru_RU':
-                to_log('Выполняется перевод. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
+        if (token != "") and (tronscan_balance > 0):
+            if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
+                if sys_lang == 'ru_RU':
+                    to_log('Выполняется перевод. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
+                else:
+                    to_log('Transfer in progress. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
+                tr = tranfer(speed_btt_port, token, min_transfer_sum)
+                if sys_lang == 'ru_RU':
+                    to_log('id транзакции: ' + tr, True)
+                else:
+                    to_log('transaction id: ' + tr, True)
+                sleep_time = turbo_time_to_try
             else:
-                to_log('Transfer in progress. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
-            tr = tranfer(speed_btt_port, token, min_transfer_sum)
-            if sys_lang == 'ru_RU':
-                to_log('id транзакции: ' + tr, True)
-            else:
-                to_log('transaction id: ' + tr, True)
-            sleep_time = turbo_time_to_try
+                if (old_tronscan_balance // 1000000) == (tronscan_balance // 1000000):
+                    if sys_lang == 'ru_RU':
+                        to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', False)
+                    else:
+                        to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', False)
+                else:
+                    if sys_lang == 'ru_RU':
+                        to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
+                    else:
+                        to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
+                old_tronscan_balance = tronscan_balance
+                sleep_time = time_to_try
         else:
-            if (old_tronscan_balance // 1000000) == (tronscan_balance // 1000000):
-                if sys_lang == 'ru_RU':
-                    to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', False)
-                else:
-                    to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', False)
-            else:
-                if sys_lang == 'ru_RU':
-                    to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
-                else:
-                    to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
-            old_tronscan_balance = tronscan_balance
-            sleep_time = time_to_try
-    else:
-        to_log('Не все необходимые данные удалось получить.', False)
-    if not onerun:
+            to_log('Не все необходимые данные удалось получить.', False)
+        if onerun:
+            sys.exit()    
         time.sleep(sleep_time)
-        try_tranfer(onerun, sleep_time)
-
-
+        
 try_tranfer(onerun, time_to_try)
-    
