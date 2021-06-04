@@ -5,8 +5,13 @@ import os.path, sys
 import time
 import locale
 
+
+#Указываем токен вашего телеграм бота
+telegram_token = ''
+chat_id = 0
+
 # Указываем ваш порт speed.btt.network
-speed_btt_port = 54426
+speed_btt_port = 54000
 
 # Минимальный баланс на шлюзе, с учетом знаков после запятой.
 # Т.е. 1000 Btt = 1000.000000 Btt. В переменную пишем без точки. 
@@ -14,30 +19,44 @@ min_tronscan_balance = 5000000000
 
 # Сколько переводим за раз.
 # Должно быть больше 1000 Btt, т.е. минимум 1000000000
-min_transfer_sum = 1000000000
+min_transfer_sum = 2000000000
 
 # Время задержки между попытками в секундах
 time_to_try = 5
 
 # Время задержки между попытками в секундах при наличии 
 # Btt на шлюзе больше, чем min_tronscan_balance
-turbo_time_to_try = 1
+turbo_time_to_try = 5
 
 # Количество строк в log файле
 log_len = 1000
 
-old_tronscan_balance = 0
-
 #Узнаём locale системы
 sys_lang = locale.getdefaultlocale()[0]
 
+old_tronscan_balance = 0
+old_balance = 0
+
+
+if telegram_token != '':
+    import telebot
+    bot = telebot.TeleBot(telegram_token)
+    @bot.message_handler(commands=['start'])
+    def start_command(message):
+        bot.send_message(message.chat.id, "Hello! СhatID: ")
+        bot.send_message(message.chat.id, str(message.chat.id))
+    if chat_id == 0:
+        bot.polling()
+
 # Пишем сообщения в log файл и выводим их в консоль
-def to_log(massage, to_file):
+def to_log(text_massage, to_file):
     #Получаем текующие дату и время
-    massage = ' ' + massage
+    text_massage = ' ' + text_massage
     current_time = datetime.now()
     current_time = current_time.strftime("%d-%m-%Y, %H:%M:%S")
     if to_file:
+        if telegram_token != '':
+            bot.send_message(chat_id, text_massage)
         if os.path.isfile(sys.path[0] + '\\btt-auto-transfer.log'):
             log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'r')
             log_file_lines = log_file.readlines()
@@ -52,9 +71,9 @@ def to_log(massage, to_file):
                 log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'a')
         else:
             log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'w')
-    print(current_time + massage)
+    print(current_time + text_massage)
     if to_file:
-        log_file.write(current_time + massage + '\n')
+        log_file.write(current_time + text_massage + '\n')
         log_file.close()
 
 
@@ -129,10 +148,17 @@ elif len(sys.argv) == 2:
 
 def try_tranfer(onerun, sleep_time):
     while True:
-        global old_tronscan_balance
+        global old_tronscan_balance, old_balance
+        
         token = get_token(speed_btt_port)
         balance = get_balance(speed_btt_port, token)
         tronscan_balance = get_tronscan_balance()
+
+        if old_balance == 0:
+            if sys_lang == 'ru_RU':
+                to_log('Скрипт запущен. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
+            else:
+                to_log('Script launched. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
 
         if (token != "") and (tronscan_balance > 0):
             if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
@@ -147,17 +173,19 @@ def try_tranfer(onerun, sleep_time):
                     to_log('transaction id: ' + tr, True)
                 sleep_time = turbo_time_to_try
             else:
-                if (old_tronscan_balance // 1000000) == (tronscan_balance // 1000000):
-                    if sys_lang == 'ru_RU':
-                        to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', False)
-                    else:
-                        to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', False)
-                else:
+                #if (old_tronscan_balance // 1000000) == (tronscan_balance // 1000000) or (balance < min_transfer_sum):
+                if old_balance > balance:
                     if sys_lang == 'ru_RU':
                         to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
                     else:
                         to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
+                else:
+                    if sys_lang == 'ru_RU':
+                        to_log('Недостаточно средств In App или на шлюзе. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', False)
+                    else:
+                        to_log('Not enough In App or Gateway funds. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', False)
                 old_tronscan_balance = tronscan_balance
+                old_balance = balance
                 sleep_time = time_to_try
         else:
             to_log('Не все необходимые данные удалось получить.', False)
