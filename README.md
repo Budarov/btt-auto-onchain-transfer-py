@@ -11,15 +11,13 @@
 
 1. Качаем и устанавливаем Phyton: [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
-2. Устанавливаем модуль , выполняем в консоли `pip install requests` .
+2. Качаете [этот репозиторий](https://github.com/Budarov/btt-auto-onchain-transfer-py) (Если нет гита то нажимаете сверху кнопку Code и выбираете Download zip, затем извлекаете и переходите в папку).
 
-3. Качаете [этот репозиторий](https://github.com/Budarov/btt-auto-onchain-transfer-py) (Если нет гита то нажимаете сверху кнопку Code и выбираете Download zip, затем извлекаете и переходите в папку).
+3. Копируем порт из адресной строки веб интерфейса Speed BTT. Например, если веб интерфейс доступен по адресу `https://speed.btt.network/gui/index.html?port=54000#/dashboard` , то ваш порт **54000**.
 
-4. Копируем порт из адресной строки веб интерфейса Speed BTT. Например, если веб интерфейс доступен по адресу `https://speed.btt.network/gui/index.html?port=54000#/dashboard` , то ваш порт **54000**.
+4. Открываете файл скрипта _**btt-auto-onchain-transfer.py**_ в любом текстовом редакторе, удобнее всего редактировать в [Notepad++](https://notepad-plus-plus.org/downloads/)
 
-5. Открываете файл скрипта _**btt-auto-onchain-transfer.py**_ в любом текстовом редакторе, удобнее всего редактировать в [Notepad++](https://notepad-plus-plus.org/downloads/)
-
-6. Указываем свой порт Speed BTT в `speed_btt_port`. Можно, но не обязательно, редактировать и другие параметры:
+5. Указываем свой порт Speed BTT в `speed_btt_port`. Можно, но не обязательно, редактировать и другие параметры:
 
    `\# Указываем ваш порт speed.btt.network`
 
@@ -45,7 +43,7 @@
 
    `log_len = 1000`
 
-7. Для запуска программы используйте _**START.bat**_
+6. Для запуска программы используйте _**START.bat**_
 
 Если хотите получать уведомления от скрипта в **Telegram**:
 
