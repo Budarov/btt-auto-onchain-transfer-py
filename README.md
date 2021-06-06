@@ -114,7 +114,7 @@ This script checks the balance on the gateway and In app wallet. As soon as the 
 
 6. Use _**START.bat**_ to run the program.
 
-   If you want to receive notifications from the script in **Telegram**:
+If you want to receive notifications from the script in **Telegram**:
 
 1. Go to the chat [@BotFather](https://t.me/botfather)
 
