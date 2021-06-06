@@ -6,30 +6,35 @@ import time
 import locale
 
 
-# Указываем токен вашего телеграм бота,
-# если хотите его использовать.
+# Указываем токен вашего телеграм бота, если хотите его использовать.
+# Add your telegram bot token if you want to use it.
 telegram_token = ''
 chat_id = 0
 
 # Указываем ваш порт speed.btt.network
+# Add your port speed.btt.network
 speed_btt_port = 54000
 
 # Минимальный баланс на шлюзе, с учетом знаков после запятой.
-# Т.е. 1000 Btt = 1000.000000 Btt. В переменную пишем без точки. 
-min_tronscan_balance = 5000000000
+# Т.е. 1000 Btt = 1000.000000 Btt. В переменную пишем без точки.
+# Minimum balance on the gateway, including decimal places.
+# 1000 Btt = 1000.000000 Btt. Write to the variable without a period.
+min_tronscan_balance = 50000000000
 
-# Сколько переводим за раз.
-# Должно быть больше 1000 Btt, т.е. минимум 1000000000
+# Сколько переводим за раз. Должно быть больше 1000 Btt, т.е. минимум 1000000000
+# How much to transfer at a time. Must be more than 1000 Btt, minimum 1000000000
 min_transfer_sum = 2000000000
 
 # Время задержки между попытками в секундах
+# Delay time between attempts in seconds
 time_to_try = 5
 
-# Время задержки между попытками в секундах при наличии 
-# Btt на шлюзе больше, чем min_tronscan_balance
+# Время задержки между попытками в секундах при наличии Btt на шлюзе больше, чем min_tronscan_balance
+# The delay time between attempts in seconds in the presence of Btt on the gateway is greater than min_tronscan_balance
 turbo_time_to_try = 5
 
 # Количество строк в log файле
+# Number of lines in the log file
 log_len = 1000
 
 #Узнаём locale системы
@@ -37,8 +42,9 @@ sys_lang = locale.getdefaultlocale()[0]
 
 old_tronscan_balance = 0
 old_balance = 0
+old_transactions = []
 
-
+# Инциализация Telegram бота
 if telegram_token != '':
     import telebot
     bot = telebot.TeleBot(telegram_token)
@@ -147,9 +153,35 @@ elif len(sys.argv) == 2:
         else:
 	        sys.exit("Script has only one argument: -onerun, exit.")
 
+# Получение списка транзакций
+def get_transactions(port, token):
+    if token == '':
+        return 0
+    transactions_res = requests.get('http://127.0.0.1:' + str(port) + '/api/exchange/transactions?t=' + token + '&count=50')
+    transactions = json.loads(transactions_res.text)
+    return transactions
+
+# Проверка статуса транзакций
+def check_transactions(old_transactions, transactions): 
+    for tr in transactions:
+        if (tr['id'] in old_transactions) and (tr['status'] == 'Complete'):
+            if tr['message'] == 'SUCCESS':
+                if sys_lang == 'ru_RU':
+                    to_log('Транзацкия ' + str(tr['id']) + ' выполненна успешно! Сумма перевода: ' + str(tr['amount'] / 1000000) + ' BTT.', True)
+                else:
+                    to_log('Transaction ' + str(tr['id']) + ' completed successfully! Transfer amount: ' + str(tr['amount'] / 1000000) + ' BTT.', True)
+                old_transactions.remove(tr['id'])
+            else:
+                if sys_lang == 'ru_RU':
+                    to_log('Транзацкия ' + str(tr['id']) + ' НЕ выполненна. Причина: ' + tr['message'], True)
+                else:
+                    to_log('Transaction ' + str(tr['id']) + ' NOT completed. Reason: ' + tr['message'], True)
+                old_transactions.remove(tr['id'])
+    return old_transactions
+
 def try_tranfer(onerun, sleep_time):
     while True:
-        global old_tronscan_balance, old_balance
+        global old_tronscan_balance, old_balance, old_transactions
         
         token = get_token(speed_btt_port)
         balance = get_balance(speed_btt_port, token)
@@ -157,9 +189,9 @@ def try_tranfer(onerun, sleep_time):
 
         if old_balance == 0:
             if sys_lang == 'ru_RU':
-                to_log('Скрипт запущен. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt.', True)
+                to_log('Скрипт запущен. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt. Вопросы по скрипту можно задать тут: https://t.me/joinchat/hQkZhUnN60dhZjZi', True)
             else:
-                to_log('Script launched. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
+                to_log('Script launched. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt. Questions about the script can be asked here: https://t.me/joinchat/hQkZhUnN60dhZjZi', True)
 
         if (token != "") and (tronscan_balance > 0):
             if (tronscan_balance >= min_tronscan_balance) and (balance >= min_transfer_sum):
@@ -168,6 +200,7 @@ def try_tranfer(onerun, sleep_time):
                 else:
                     to_log('Transfer in progress. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
                 tr = tranfer(speed_btt_port, token, min_transfer_sum)
+                old_tronscan_balance.append(int(tr))
                 if sys_lang == 'ru_RU':
                     to_log('id транзакции: ' + tr, True)
                 else:
@@ -188,8 +221,10 @@ def try_tranfer(onerun, sleep_time):
                 old_tronscan_balance = tronscan_balance
                 old_balance = balance
                 sleep_time = time_to_try
+            if len(old_transactions) > 0:
+                old_transactions = check_transactions(old_transactions, get_transactions(speed_btt_port, token))
         else:
-            to_log('Не все необходимые данные удалось получить.', False)
+            to_log('Не все необходимые данные удалось получить.', False)       
         if onerun:
             sys.exit()    
         time.sleep(sleep_time)
