@@ -85,15 +85,25 @@ def to_log(text_massage, to_file):
 
 
 # Получаем токен BTT Speed
+get_token_err = False
 def get_token(port):
+    global get_token_err
     try:
         token_res = requests.get('http://127.0.0.1:' + str(port) + '/api/token')
         token = token_res.text
+        get_token_err = False
     except requests.ConnectionError:
-        if sys_lang == 'ru_RU':
-            to_log('Не удалось получить токен BTT Speed по адресу: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Указан неверный порт или не запущен BTT Speed.', True)
+        if get_token_err == False:
+            get_token_err = True
+            if sys_lang == 'ru_RU':
+                to_log('Не удалось получить токен BTT Speed по адресу: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Указан неверный порт или не запущен BTT Speed.', True)
+            else:
+                to_log('Failed to get BTT Speed token at address: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Wrong port in settings or BTT speed not running.', True)
         else:
-            to_log('Failed to get BTT Speed token at address: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Wrong port in settings or BTT speed not running.', True)
+            if sys_lang == 'ru_RU':
+                to_log('Не удалось получить токен BTT Speed по адресу: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Указан неверный порт или не запущен BTT Speed.', False)
+            else:
+                to_log('Failed to get BTT Speed token at address: ' + 'http://127.0.0.1:' + str(port) + '/api/token' + ' Wrong port in settings or BTT speed not running.', False)
         return ''
     return token
 
@@ -187,7 +197,7 @@ def try_tranfer(onerun, sleep_time):
         balance = get_balance(speed_btt_port, token)
         tronscan_balance = get_tronscan_balance()
 
-        if old_balance == 0:
+        if (old_balance == 0) and (get_token_err == False):
             if sys_lang == 'ru_RU':
                 to_log('Скрипт запущен. Баланс шлюза: ' + str(tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(balance / 1000000) + ' Btt. Вопросы по скрипту можно задать тут: https://t.me/joinchat/hQkZhUnN60dhZjZi', True)
             else:
