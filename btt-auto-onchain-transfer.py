@@ -1,10 +1,14 @@
-import requests
 import json
 from datetime import datetime
 import os.path, sys
 import time
 import locale
-
+try:
+    import requests
+except ModuleNotFoundError:
+    import pip
+    pip.main(['install', "requests"]) 
+    import requests
 
 # Указываем токен вашего телеграм бота, если хотите его использовать.
 # Add your telegram bot token if you want to use it.
@@ -33,6 +37,10 @@ time_to_try = 5
 # The delay time between attempts in seconds in the presence of Btt on the gateway is greater than min_tronscan_balance
 turbo_time_to_try = 5
 
+# Имя компьютера. Будет добавлено в сообщения в telegram и log.
+#Computer name. Will be added to messages in telegram and log.
+host_name = ''
+
 # Количество строк в log файле
 # Number of lines in the log file
 log_len = 1000
@@ -46,7 +54,12 @@ old_transactions = []
 
 # Инциализация Telegram бота
 if telegram_token != '':
-    import telebot
+    try:
+        import telebot
+    except ModuleNotFoundError:
+        import pip
+        pip.main(['install', "pyTelegramBotAPI"])
+        import telebot
     bot = telebot.TeleBot(telegram_token)
     @bot.message_handler(commands=['start'])
     def start_command(message):
@@ -56,14 +69,28 @@ if telegram_token != '':
         bot.polling()
 
 # Пишем сообщения в log файл и выводим их в консоль
-def to_log(text_massage, to_file):
+def to_log(text_massage, to_file, tg = True):
+    global telegram_token
     #Получаем текующие дату и время
-    text_massage = ' ' + text_massage
+    text_massage = '  ' + host_name + ' ' + text_massage
     current_time = datetime.now()
     current_time = current_time.strftime("%d-%m-%Y, %H:%M:%S")
     if to_file:
-        if telegram_token != '':
-            bot.send_message(chat_id, text_massage)
+        if tg:
+            try:
+                if telegram_token != '':
+                    bot.send_message(chat_id, text_massage)
+            except telebot.apihelper.ApiTelegramException:
+                telegram_token = ''
+                if sys_lang == 'ru_RU':
+                    to_log('Указан не верный telegram Chat id или токен.', True, False )
+                else:
+                    to_log('Incorrect telegram Chat id or Token.', True, False)
+            except requests.exceptions.ConnectionError:
+                if sys_lang == 'ru_RU':
+                    to_log('Api Telegtam не доступно.', True, False)
+                else:
+                    to_log('Api Telegtam not available.', True, False)
         if os.path.isfile(sys.path[0] + '\\btt-auto-transfer.log'):
             log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'r')
             log_file_lines = log_file.readlines()
