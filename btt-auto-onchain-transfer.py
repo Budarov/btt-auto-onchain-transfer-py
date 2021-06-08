@@ -244,13 +244,13 @@ def check_transactions(old_transactions, transactions):
                     to_log('Транзацкия ' + str(tr['id']) + ' выполненна успешно! Сумма перевода: ' + str(tr['amount'] / 1000000) + ' BTT.', True)
                 else:
                     to_log('Transaction ' + str(tr['id']) + ' completed successfully! Transfer amount: ' + str(tr['amount'] / 1000000) + ' BTT.', True)
-                del_old_transactions(tr['id'])
+                old_transactions = del_old_transactions(tr['id'])
             else:
                 if sys_lang == 'ru_RU':
                     to_log('Транзацкия ' + str(tr['id']) + ' НЕ выполненна. Причина: ' + tr['message'], True)
                 else:
                     to_log('Transaction ' + str(tr['id']) + ' NOT completed. Reason: ' + tr['message'], True)
-                del_old_transactions(tr['id'])
+                old_transactions = del_old_transactions(tr['id'])
     return old_transactions
 
 def try_tranfer(onerun, sleep_time):
