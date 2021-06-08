@@ -2,4 +2,7 @@
 btt-auto-transfer.log
 test.py
 test.bat
+trans_class.py
 
+*.dat
+*.py_

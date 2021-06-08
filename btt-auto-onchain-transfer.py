@@ -50,7 +50,44 @@ sys_lang = locale.getdefaultlocale()[0]
 
 old_tronscan_balance = 0
 old_balance = 0
-old_transactions = []
+
+
+# Читаем транзакции из файла, если они есть.
+def get_old_transactions():
+    if os.path.isfile(sys.path[0] + '\\btt-auto-transactions-id.dat'):
+        tr_file = open(sys.path[0] + '\\btt-auto-transactions-id.dat', 'r')
+        tr_file_lines = tr_file.readlines() 
+        try:          
+            res = json.loads(tr_file_lines[0])
+        except IndexError:
+            res = []
+        tr_file.close()
+        return res
+    else:
+        return []
+
+old_transactions = get_old_transactions()
+
+# Пишем выполненную транзакцию в файл
+def add_old_transactions(tr):
+    old_tr = get_old_transactions()
+    old_tr.append(tr)
+    tr_file = open(sys.path[0] + '\\btt-auto-transactions-id.dat', 'w')
+    tr_file.write(json.dumps(old_tr))
+    tr_file.close()
+    return old_tr
+
+# Удаляем выполненную транзакцию из файла
+def del_old_transactions(tr):
+    old_tr = get_old_transactions()
+    try:
+        old_tr.remove(tr)
+    except ValueError:
+        print ('id Транзакции в файле не найдена.')
+    tr_file = open(sys.path[0] + '\\btt-auto-transactions-id.dat', 'w')
+    tr_file.write(json.dumps(old_tr))
+    tr_file.close()
+    return old_tr
 
 # Инциализация Telegram бота
 if telegram_token != '':
@@ -207,13 +244,13 @@ def check_transactions(old_transactions, transactions):
                     to_log('Транзацкия ' + str(tr['id']) + ' выполненна успешно! Сумма перевода: ' + str(tr['amount'] / 1000000) + ' BTT.', True)
                 else:
                     to_log('Transaction ' + str(tr['id']) + ' completed successfully! Transfer amount: ' + str(tr['amount'] / 1000000) + ' BTT.', True)
-                old_transactions.remove(tr['id'])
+                del_old_transactions(tr['id'])
             else:
                 if sys_lang == 'ru_RU':
                     to_log('Транзацкия ' + str(tr['id']) + ' НЕ выполненна. Причина: ' + tr['message'], True)
                 else:
                     to_log('Transaction ' + str(tr['id']) + ' NOT completed. Reason: ' + tr['message'], True)
-                old_transactions.remove(tr['id'])
+                del_old_transactions(tr['id'])
     return old_transactions
 
 def try_tranfer(onerun, sleep_time):
@@ -237,7 +274,7 @@ def try_tranfer(onerun, sleep_time):
                 else:
                     to_log('Transfer in progress. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
                 tr = tranfer(speed_btt_port, token, min_transfer_sum)
-                old_transactions.append(int(tr))
+                add_old_transactions(int(tr))
                 if sys_lang == 'ru_RU':
                     to_log('id транзакции: ' + tr, True)
                 else:
