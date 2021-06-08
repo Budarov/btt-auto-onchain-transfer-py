@@ -237,7 +237,7 @@ def try_tranfer(onerun, sleep_time):
                 else:
                     to_log('Transfer in progress. Gateway balance: ' + str(tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(balance / 1000000) + ' Btt.', True)
                 tr = tranfer(speed_btt_port, token, min_transfer_sum)
-                old_tronscan_balance.append(int(tr))
+                old_transactions.append(int(tr))
                 if sys_lang == 'ru_RU':
                     to_log('id транзакции: ' + tr, True)
                 else:
