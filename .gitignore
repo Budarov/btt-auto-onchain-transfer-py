@@ -2,5 +2,4 @@ test*
 *.log
 *.dat
 *.py_
-BttSpeed.py
 *.pyc
