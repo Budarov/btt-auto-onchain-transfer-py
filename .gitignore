@@ -1,8 +1,5 @@
-
-btt-auto-transfer.log
-test.py
-test.bat
-trans_class.py
-
+test*
+*.log
 *.dat
 *.py_
+BttSpeed.py

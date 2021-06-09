@@ -295,10 +295,10 @@ def try_tranfer(onerun, sleep_time):
                 old_tronscan_balance = tronscan_balance
                 old_balance = balance
                 sleep_time = time_to_try
-            if len(old_transactions) > 0:
-                old_transactions = check_transactions(old_transactions, get_transactions(speed_btt_port, token))
         else:
-            to_log('Не все необходимые данные удалось получить.', False)       
+            to_log('Не все необходимые данные удалось получить.', False)  
+        if len(old_transactions) > 0:
+                old_transactions = check_transactions(old_transactions, get_transactions(speed_btt_port, token))     
         if onerun:
             sys.exit()    
         time.sleep(sleep_time)
