@@ -139,9 +139,9 @@ class BttSpeed:
         tr_text = transfer_post.text
         self.add_old_transactions(int(tr_text))
         if self.sys_lang == 'ru_RU':
-            self.to_log('Выполнен перевод на сумму: ' + str(transfer_sum / 1000000) + ' Btt. id транзакции: '+ tr_text + 'Баланс шлюза: ' + str(self.tronscan_balance / 1000000) + ' Btt. Баланс In App: ' + str(self.balance / 1000000) + ' Btt.', True)
+            self.to_log('Выполнен перевод на сумму: ' + str(transfer_sum / 1000000) + ' Btt. id транзакции: '+ tr_text + 'Баланс шлюза: ' + str(self.gateway_balance / 1000000) + ' Btt. Баланс In App: ' + str(self.balance / 1000000) + ' Btt.', True)
         else:
-            self.to_log('A transfer in the amount of: ' + str(transfer_sum / 1000000) + ' Btt. Transaction id: '+ tr_text + 'Gateway balance: ' + str(self.tronscan_balance / 1000000) + ' Btt. Balance In App: ' + str(self.balance / 1000000) + ' Btt.', True)
+            self.to_log('A transfer in the amount of: ' + str(transfer_sum / 1000000) + ' Btt. Transaction id: '+ tr_text + 'Gateway balance: ' + str(self.gateway_balance / 1000000) + ' Btt. Balance In App: ' + str(self.balance / 1000000) + ' Btt.', True)
         return tr_text
 
 # --------------------- Отслеживание статуса транзакций ---------------------
