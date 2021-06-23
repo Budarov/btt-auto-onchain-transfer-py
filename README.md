@@ -15,7 +15,7 @@
 
 3. Копируем порт из адресной строки веб интерфейса Speed BTT. Например, если веб интерфейс доступен по адресу `https://speed.btt.network/gui/index.html?port=54000#/dashboard` , то ваш порт **54000**.
 
-4. Открываете файл скрипта _**btt-auto-onchain-transfer.py**_ в любом текстовом редакторе, удобнее всего редактировать в [Notepad++](https://notepad-plus-plus.org/downloads/)
+4. Открываете файл конфигурации **settings.ini** в любом текстовом редакторе, удобнее всего редактировать в [Notepad++](https://notepad-plus-plus.org/downloads/)
 
 5. Указываем свой порт Speed BTT в `speed_btt_port`. Можно, но не обязательно, редактировать и другие параметры:
 
@@ -27,7 +27,7 @@
 
    `\# Т.е. 1000 Btt = 1000.000000 Btt. В переменную пишем без точки.` 
 
-   `min_tronscan_balance = 10000000000`
+   `min_gateway_balance = 10000000000`
 
    `\# Сколько переводим за раз.`
 
@@ -86,7 +86,7 @@ This script checks the balance on the gateway and In app wallet. As soon as the 
 
 3. Copy the port from the address line of the Speed BTT web interface. For example, if the web interface is available at `https: //speed.btt.network/gui/index.html? Port = 54000 # / dashboard`, then your port is ** 54000 **.
 
-4. Open the script file _**btt-auto-onchain-transfer.py**_ in any text editor, it is most convenient to edit in [Notepad ++](https://notepad-plus-plus.org/downloads/)
+4. Open the config file _**settings.ini**_ in any text editor, it is most convenient to edit in [Notepad ++](https://notepad-plus-plus.org/downloads/)
 
 5. Add your Speed BTT port to `speed_btt_port`. It is possible, but not required, to edit other parameters:
 
@@ -98,7 +98,7 @@ This script checks the balance on the gateway and In app wallet. As soon as the 
 
     `\# 1000 Btt = 1000.000000 Btt. Write to the variable without a period.`
 
-    `min_tronscan_balance = 10000000000`
+    `min_gateway_balance = 10000000000`
 
     `\# How much to transfer at a time. Must be more than 1000 Btt, minimum 1000000000`
 

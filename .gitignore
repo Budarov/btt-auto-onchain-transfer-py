@@ -3,3 +3,5 @@ test*
 *.dat
 *.py_
 BttSpeed.py
+*.pyc
+utorrentapi.py
