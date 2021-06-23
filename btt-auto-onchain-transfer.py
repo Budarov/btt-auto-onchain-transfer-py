@@ -111,4 +111,7 @@ def try_tranfer(onerun, sleep_time):
         if onerun:
             sys.exit()    
         time.sleep(sleep_time)
-try_tranfer(onerun, time_to_try)
+try:
+    try_tranfer(onerun, time_to_try)
+except KeyboardInterrupt:
+    sys.exit('CTRL+C Stop Script!')

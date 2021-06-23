@@ -3,3 +3,6 @@ test*
 *.dat
 *.py_
 *.pyc
+utorrentapi.py
+settings.ini
+settings.ini

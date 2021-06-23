@@ -236,19 +236,19 @@ class BttSpeed:
                     else:
                         self.to_log('Api Telegtam not available.', True, False)
             if os.path.isfile(sys.path[0] + '\\btt-auto-transfer.log'):
-                log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'r')
+                log_file = open(sys.path[0] + '\\btt-auto-transfer.log', encoding='utf-8', mode='r')
                 log_file_lines = log_file.readlines()
                 if len(log_file_lines) >= self.log_len:
                     cut_len = len(log_file_lines) - self.log_len
                     for ln in range(cut_len + 1):
                         log_file_lines.pop(0)
-                    log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'w')
+                    log_file = open(sys.path[0] + '\\btt-auto-transfer.log', encoding='utf-8', mode='w')
                     for ln in range(len(log_file_lines)):
                         log_file.write(str(log_file_lines[ln]))
                 else:
-                    log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'a')
+                    log_file = open(sys.path[0] + '\\btt-auto-transfer.log', encoding='utf-8', mode='a')
             else:
-                log_file = open(sys.path[0] + '\\btt-auto-transfer.log', 'w')
+                log_file = open(sys.path[0] + '\\btt-auto-transfer.log', encoding='utf-8', mode='w')
         print(text_massage)
         if to_file:
             log_file.write(text_massage + '\n')
