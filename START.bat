@@ -17,5 +17,5 @@ set b=Name: pyTelegramBotAPI
 if !var1! == !b! (ECHO pyTelegramBotAPI module is already installed) ^
 else (py -m pip install pyTelegramBotAPI)
 if exist %~dp0\btt-auto-onchain-transfer.py  (py %~dp0\btt-auto-onchain-transfer.py) ^
-else (ECHO Script file not fount)
+else (ECHO Script file not found)
 ENDLOCAL
