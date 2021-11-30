@@ -5,3 +5,4 @@ test*
 BttSpeed.py
 *.pyc
 utorrentapi.py
+settings.ini

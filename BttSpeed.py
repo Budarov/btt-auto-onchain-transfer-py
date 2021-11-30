@@ -111,23 +111,23 @@ class BttSpeed:
     # Получаем баланс на шлюзе
     def update_gateway_balance(self):
         try:
-            balance_res = requests.get('https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a')
+            balance_res = requests.get('https://apiasia.tronscan.io:5566/api/account?address=TTZu7wpHa9tnQjFUDrsjgPfXE7fck7yYs5')
             balance = json.loads(balance_res.text)
             sa = list(filter(lambda tokenBalances: tokenBalances['tokenId'] == '1002000', balance["tokenBalances"]))
         except requests.ConnectionError:
             if self.sys_lang == 'ru_RU':
-                self.to_log('Не удалось узнать баланc шлюза по адресу https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a сайт недоступен.', True)
+                self.to_log('Не удалось узнать баланc шлюза по адресу https://apiasia.tronscan.io:5566/api/account?address=TTZu7wpHa9tnQjFUDrsjgPfXE7fck7yYs5 сайт недоступен.', True)
             else:
-                self.to_log('Failed get balance of gateway at address https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a site unavailable.', True)
+                self.to_log('Failed get balance of gateway at address https://apiasia.tronscan.io:5566/api/account?address=TTZu7wpHa9tnQjFUDrsjgPfXE7fck7yYs5 site unavailable.', True)
             self.gateway_balance = 0
             return self.gateway_balance
         try:
             self.gateway_balance = int(sa[0]['balance'])
         except IndexError:
             if self.sys_lang == 'ru_RU':
-                self.to_log('Пришел не валидный json от https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a', True)
+                self.to_log('Пришел не валидный json от https://apiasia.tronscan.io:5566/api/account?address=TTZu7wpHa9tnQjFUDrsjgPfXE7fck7yYs5', True)
             else:
-                self.to_log('Not valid json from https://apiasia.tronscan.io:5566/api/account?address=TA1EHWb1PymZ1qpBNfNj9uTaxd18ubrC7a', True)
+                self.to_log('Not valid json from https://apiasia.tronscan.io:5566/api/account?address=TTZu7wpHa9tnQjFUDrsjgPfXE7fck7yYs5', True)
             self.gateway_balance = 0
             return self.gateway_balance
         return self.gateway_balance
@@ -139,9 +139,9 @@ class BttSpeed:
         tr_text = transfer_post.text
         self.add_old_transactions(int(tr_text))
         if self.sys_lang == 'ru_RU':
-            self.to_log('Выполнен перевод на сумму: ' + str(transfer_sum / 1000000) + ' Btt. id транзакции: '+ tr_text + 'Баланс шлюза: ' + str(self.gateway_balance / 1000000) + ' Btt. Баланс In App: ' + str(self.balance / 1000000) + ' Btt.', True)
+            self.to_log('Выполнен перевод на сумму: ' + str(transfer_sum / 1000000) + ' Btt. id транзакции: '+ tr_text + ' Баланс шлюза: ' + str(self.gateway_balance / 1000000) + ' Btt. Баланс In App: ' + str(self.balance / 1000000) + ' Btt.', True)
         else:
-            self.to_log('A transfer in the amount of: ' + str(transfer_sum / 1000000) + ' Btt. Transaction id: '+ tr_text + 'Gateway balance: ' + str(self.gateway_balance / 1000000) + ' Btt. Balance In App: ' + str(self.balance / 1000000) + ' Btt.', True)
+            self.to_log('A transfer in the amount of: ' + str(transfer_sum / 1000000) + ' Btt. Transaction id: '+ tr_text + ' Gateway balance: ' + str(self.gateway_balance / 1000000) + ' Btt. Balance In App: ' + str(self.balance / 1000000) + ' Btt.', True)
         return tr_text
 
 # --------------------- Отслеживание статуса транзакций ---------------------
